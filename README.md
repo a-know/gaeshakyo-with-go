@@ -6,8 +6,8 @@ This project is trying to "sha-kyo (写経)" a book "Google App Engine for Java�
 
 1. install go
 2. set $GOPATH
-    * This project use `direnv`.
-3. Donwload appengine SDK
+    * `direnv`, `goenv` are useful. :)
+3. Download appengine SDK
 
 # start dev-server
 
