@@ -1,0 +1,62 @@
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <title>GuestBook</title>
+</head>
+<body>
+  <h1>GuestBook</h1>
+  <p>何か書いてね</p>
+  <div>
+    <form id="form" action="/dummy" method="post">
+      <p>
+        <input id="message" type="text" name="message" size="50" />
+        <input type="submit" />
+      </p>
+    </form>
+  </div>
+  <div id="content"></div>
+  <script type="text/javascript" src="https://code.jquery.com/jquery-1.11.1.min.js"></script>
+  <script type="text/javascript">
+    $(function() {
+      function refresh() {
+        var onError = function(jqXHR, textStatus, errorThrown) {
+          alert('error');
+        };
+        var onSuccess = function(data, textStatus, jqXHR) {
+          $('#content ul').remove();
+          var ul = $('<ul/>');
+          var guestbook, li;
+          $.each(data, function(_, guestbook) {
+            var li = $('<li/>').text(guestbook['Message'] + '(' + new Date(guestbook['CreatedAt']) + ')');
+            li.appendTo(ul);
+          });
+          ul.appendTo('#content');
+        };
+        $.ajax({
+          url: '/getGuestbook', type: 'get'
+        }).success(onSuccess).error(onError);
+      }
+      refresh();
+      var submit = function(event) {
+        var message = $('#message');
+        if(!message.val()) {
+          message.focus();
+          return false;
+        }
+        var onError = function(jqXHR, textStatus, errorThrown) {
+          alert('error');
+        };
+        var onSuccess = function(data, textStatus, jqXHR) {
+          alert('success')
+          message.val('');
+        };
+        $.ajax({
+          url: '/postGuestbook', type: 'post', data: message
+        }).success(onSuccess).error(onError);
+        return false;
+      };
+      $('#form').submit(submit);
+    });
+  </script>
+</body>
+</html>
