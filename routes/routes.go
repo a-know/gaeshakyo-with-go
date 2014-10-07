@@ -3,10 +3,10 @@ package routes
 import (
 	"net/http"
 
-	"controller"
+	"controller/guestbook"
 )
 
 func init() {
-	http.HandleFunc("/postGuestbook", controller.WriteToGuestbook)
-	http.HandleFunc("/getGuestbook", controller.GetMessageList)
+	http.HandleFunc("/postGuestbook", guestbook.WriteToGuestbook)
+	http.HandleFunc("/getGuestbook", guestbook.GetMessageList)
 }
