@@ -23,10 +23,10 @@ func Save(c appengine.Context, message string) (err error) {
 	return err
 }
 
-func DescList(c appengine.Context) (guestbooks []Guestbook) {
+func DescList(c appengine.Context) (guestbooks []Guestbook, err error) {
 	q := datastore.NewQuery("guestbook")
 
-	_, _ = q.GetAll(c, &guestbooks)
+	_, err = q.GetAll(c, &guestbooks)
 
-	return guestbooks
+	return guestbooks, err
 }
