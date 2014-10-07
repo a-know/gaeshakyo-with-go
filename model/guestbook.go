@@ -24,7 +24,7 @@ func Save(c appengine.Context, message string) (err error) {
 }
 
 func DescList(c appengine.Context) (guestbooks []Guestbook, err error) {
-	q := datastore.NewQuery("guestbook")
+	q := datastore.NewQuery("guestbook").Order("-CreatedAt")
 
 	_, err = q.GetAll(c, &guestbooks)
 
