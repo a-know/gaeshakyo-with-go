@@ -49,6 +49,7 @@
         var onSuccess = function(data, textStatus, jqXHR) {
           alert('success')
           message.val('');
+          refresh();
         };
         $.ajax({
           url: '/postGuestbook', type: 'post', data: message
