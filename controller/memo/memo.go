@@ -13,7 +13,12 @@ func Post(w http.ResponseWriter, r *http.Request) {
 	c := appengine.NewContext(r)
 	memoString := r.FormValue("memo")
 	minutesKeyString := r.FormValue("minutes")
-	minutesKey, _ := datastore.DecodeKey(minutesKeyString)
+	minutesKey, err := datastore.DecodeKey(minutesKeyString)
+
+	if err != nil {
+		http.Error(w, "Irregal Minutes Key string", http.StatusBadRequest)
+		return
+	}
 
 	if memoString != "" {
 		_, err := memo.SaveAs(c, minutesKey ,memoString)
