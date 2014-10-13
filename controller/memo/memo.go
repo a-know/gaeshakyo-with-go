@@ -16,18 +16,18 @@ func Post(w http.ResponseWriter, r *http.Request) {
 	minutesKey, err := datastore.DecodeKey(minutesKeyString)
 
 	if err != nil {
-		http.Error(w, "Irregal Minutes Key string", http.StatusBadRequest)
+		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 
-	if memoString != "" {
-		_, err := memo.SaveAs(c, minutesKey ,memoString)
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-			return
-		}
-	} else {
+	if memoString == "" {
 		http.Error(w, "memo is not set", http.StatusBadRequest)
+		return
+	}
+
+	_, err = memo.SaveAs(c, minutesKey ,memoString)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 }
