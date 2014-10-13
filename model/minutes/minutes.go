@@ -23,8 +23,8 @@ func SaveAs(c appengine.Context, title string) (*datastore.Key, error) {
 	return key, err
 }
 
-func AscList(c appengine.Context) (minutes []Minutes, err error) {
-	q := datastore.NewQuery("minutes").Order("+CreatedAt")
+func DescList(c appengine.Context) (minutes []Minutes, err error) {
+	q := datastore.NewQuery("minutes").Order("-CreatedAt")
 
 	_, err = q.GetAll(c, &minutes)
 

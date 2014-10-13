@@ -26,7 +26,7 @@ func Post(w http.ResponseWriter, r *http.Request) {
 
 func Show(w http.ResponseWriter, r *http.Request) {
 	c := appengine.NewContext(r)
-	minutes_list, err := minutes.AscList(c)
+	minutes_list, err := minutes.DescList(c)
 
 	js, err := json.Marshal(minutes_list)
 	if err != nil {
