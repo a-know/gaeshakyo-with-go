@@ -1,29 +1,29 @@
-package guestbook
+package minutes
 
 import (
 	"appengine"
 	"encoding/json"
 	"net/http"
 
-	"model/guestbook"
+	"model/minutes"
 )
 
-func WriteToGuestbook(w http.ResponseWriter, r *http.Request) {
+func Post(w http.ResponseWriter, r *http.Request) {
 	c := appengine.NewContext(r)
-	message := r.FormValue("message")
+	message := r.FormValue("title")
 
-	err := guestbook.Save(c, message)
+	_, err := minutes.Saveas(c, message)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 }
 
-func GetMessageList(w http.ResponseWriter, r *http.Request) {
+func Show(w http.ResponseWriter, r *http.Request) {
 	c := appengine.NewContext(r)
-	messages, err := guestbook.DescList(c)
+	minutes_list, err := minutes.AscList(c)
 
-	js, err := json.Marshal(messages)
+	js, err := json.Marshal(minutes_list)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
