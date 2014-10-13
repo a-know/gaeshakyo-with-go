@@ -1,17 +1,20 @@
 <html>
 <head>
   <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-  <title>議事録一覧</title>
+  <title>GuestBook</title>
 </head>
 <body>
-  <h1>議事録一覧</h1>
+  <h1>GuestBook</h1>
+  <p>何か書いてね</p>
+  <div>
+    <form id="form" action="/dummy" method="post">
+      <p>
+        <input id="message" type="text" name="message" size="50" />
+        <input type="submit" />
+      </p>
+    </form>
+  </div>
   <div id="content"></div>
-  <h2>新しく議事録を作成する</h2>
-  <form id="form" action="/dummy" method="post">
-    <p><input id="title" type="text" name="title" size="100" /></p>
-    <p><input type="submit" /></p>
-  </form>
-
   <script type="text/javascript" src="https://code.jquery.com/jquery-1.11.1.min.js"></script>
   <script type="text/javascript">
     $(function() {
@@ -22,27 +25,22 @@
         var onSuccess = function(data, textStatus, jqXHR) {
           $('#content ul').remove();
           var ul = $('<ul/>');
-          // var minutes, li;
-          $.each(data, function(_, minutes) {
-            var li = $('<li/>')
-                          .append(
-                            $('<a/>')
-                            .attr('href', 'minutes.html?minutes=' + minutes['Key'])
-                            .text(minutes['Title'] + '(' + new Date(minutes['CreatedAt']) + ')')
-                          );
+          var guestbook, li;
+          $.each(data, function(_, guestbook) {
+            var li = $('<li/>').text(guestbook['Message'] + '(' + new Date(guestbook['CreatedAt']) + ')');
             li.appendTo(ul);
           });
           ul.appendTo('#content');
         };
         $.ajax({
-          url: '/showMinutes', type: 'get'
+          url: '/getGuestbook', type: 'get'
         }).success(onSuccess).error(onError);
       }
       refresh();
       var submit = function(event) {
-        var title = $('#title');
-        if(!title.val()) {
-          title.focus();
+        var message = $('#message');
+        if(!message.val()) {
+          message.focus();
           return false;
         }
         var onError = function(jqXHR, textStatus, errorThrown) {
@@ -50,11 +48,11 @@
         };
         var onSuccess = function(data, textStatus, jqXHR) {
           alert('success')
-          title.val('');
+          message.val('');
           refresh();
         };
         $.ajax({
-          url: '/postMinutes', type: 'post', data: title
+          url: '/postGuestbook', type: 'post', data: message
         }).success(onSuccess).error(onError);
         return false;
       };
