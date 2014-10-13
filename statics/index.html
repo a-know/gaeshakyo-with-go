@@ -1,0 +1,60 @@
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <title>議事録一覧</title>
+</head>
+<body>
+  <h1>議事録一覧</h1>
+  <div id="content"></div>
+  <h1>新しく議事録を作成する</h2>
+  <form id="form" action="/dummy" method="post">
+    <p><input id="title" type="text" name="title" size="100" /></p>
+    <p><input type="submit" /></p>
+  </form>
+
+  <script type="text/javascript" src="https://code.jquery.com/jquery-1.11.1.min.js"></script>
+  <script type="text/javascript">
+    $(function() {
+      function refresh() {
+        var onError = function(jqXHR, textStatus, errorThrown) {
+          alert('error');
+        };
+        var onSuccess = function(data, textStatus, jqXHR) {
+          $('#content ul').remove();
+          var ul = $('<ul/>');
+          // var minutes, li;
+          $.each(data, function(_, minutes) {
+            var li = $('<li/>').text(minutes['Title'] + '(' + new Date(minutes['CreatedAt']) + ')');
+            li.appendTo(ul);
+          });
+          ul.appendTo('#content');
+        };
+        $.ajax({
+          url: '/showMinutes', type: 'get'
+        }).success(onSuccess).error(onError);
+      }
+      refresh();
+      var submit = function(event) {
+        var title = $('#title');
+        if(!title.val()) {
+          title.focus();
+          return false;
+        }
+        var onError = function(jqXHR, textStatus, errorThrown) {
+          alert('error');
+        };
+        var onSuccess = function(data, textStatus, jqXHR) {
+          alert('success')
+          title.val('');
+          refresh();
+        };
+        $.ajax({
+          url: '/postMinutes', type: 'post', data: title
+        }).success(onSuccess).error(onError);
+        return false;
+      };
+      $('#form').submit(submit);
+    });
+  </script>
+</body>
+</html>
