@@ -4,6 +4,8 @@ import (
 	"appengine"
 	"appengine/datastore"
 	"time"
+
+	"code.google.com/p/go-uuid/uuid"
 )
 
 type Memo struct {
@@ -14,7 +16,7 @@ type Memo struct {
 }
 
 func SaveAs(c appengine.Context, minutesKey *datastore.Key, memoString string) (*datastore.Key, error) {
-	key := datastore.NewIncompleteKey(c, "memo", nil)
+	key := datastore.NewKey(c, "memo", uuid.New(), 0, nil)
 
 	m1 := Memo{
 		Key:       key,
@@ -29,7 +31,7 @@ func SaveAs(c appengine.Context, minutesKey *datastore.Key, memoString string) (
 }
 
 func AscList(c appengine.Context, minutesKey *datastore.Key) (memo []Memo, err error) {
-	q := datastore.NewQuery("memo").Filter("Minutes", minutesKey).Order("+CreatedAt")
+	q := datastore.NewQuery("memo").Filter("Minutes =", minutesKey).Order("CreatedAt")
 
 	_, err = q.GetAll(c, &memo)
 

@@ -18,6 +18,13 @@
   <script type="text/javascript" src="https://code.jquery.com/jquery-1.11.1.min.js"></script>
   <script type="text/javascript">
     $(function() {
+      var href = window.location.href;
+      if (href.indexOf('?minutes=') < 0) {
+        window.location.href = 'index.html'
+        return;
+      }
+      minutes = href.split('?minutes=')[1];
+
       function refresh() {
         var onError = function(jqXHR, textStatus, errorThrown) {
           alert('error');
@@ -26,7 +33,7 @@
           $('#content ul').remove();
           var ul = $('<ul/>');
           // var minutes, li;
-          $.each(data, function(_, minutes) {
+          $.each(data, function(_, memo) {
             var li = $('<li/>')
                         .text(memo['Memo'] + '(' + new Date(memo['CreatedAt']) + ')');
             li.appendTo(ul);
@@ -38,13 +45,8 @@
           url: '/showMemo?minutes=' + minutes, type: 'get'
         }).success(onSuccess).error(onError);
       }
+
       refresh();
-      var href = window.location.href;
-      if (href.indexOf('?minutes=') < 0) {
-        window.location.href = 'index.html'
-        return;
-      }
-      minutes = href.split('?minutes=')[1];
 
       var submit = function(event) {
         var memo = $('#memo');
@@ -58,7 +60,7 @@
         var onSuccess = function(data, textStatus, jqXHR) {
           alert('success')
           memo.val('');
-          // refresh();
+          refresh();
         };
         $.ajax({
           url: '/postMemo', type: 'post', data: {memo:memo.val(), minutes:minutes}

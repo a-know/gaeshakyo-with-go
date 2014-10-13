@@ -10,16 +10,16 @@ import (
 
 func Post(w http.ResponseWriter, r *http.Request) {
 	c := appengine.NewContext(r)
-	message := r.FormValue("title")
+	title := r.FormValue("title")
 
-	if message != "" {
-		_, err := minutes.SaveAs(c, message)
+	if title != "" {
+		_, err := minutes.SaveAs(c, title)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
 	} else {
-		http.Error(w, "message is not set", http.StatusBadRequest)
+		http.Error(w, "title is not set", http.StatusBadRequest)
 		return
 	}
 }

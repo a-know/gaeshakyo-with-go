@@ -4,6 +4,8 @@ import (
 	"appengine"
 	"appengine/datastore"
 	"time"
+
+	"code.google.com/p/go-uuid/uuid"
 )
 
 type Minutes struct {
@@ -13,7 +15,7 @@ type Minutes struct {
 }
 
 func SaveAs(c appengine.Context, title string) (*datastore.Key, error) {
-	key := datastore.NewIncompleteKey(c, "minutes", nil)
+	key := datastore.NewKey(c, "minutes", uuid.New(), 0, nil)
 
 	m1 := Minutes{
 		Key:       key,
