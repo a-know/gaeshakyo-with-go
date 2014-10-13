@@ -24,7 +24,12 @@
           var ul = $('<ul/>');
           // var minutes, li;
           $.each(data, function(_, minutes) {
-            var li = $('<li/>').text(minutes['Title'] + '(' + new Date(minutes['CreatedAt']) + ')');
+            var li = $('<li/>')
+                          .append(
+                            $('<a/>')
+                            .attr('href', 'minutes.html?minutes=' + minutes['Key'])
+                            .text(minutes['Title'] + '(' + new Date(minutes['CreatedAt']) + ')')
+                          );
             li.appendTo(ul);
           });
           ul.appendTo('#content');

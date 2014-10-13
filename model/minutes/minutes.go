@@ -7,18 +7,21 @@ import (
 )
 
 type Minutes struct {
+	Key *datastore.Key
 	Title   string
 	CreatedAt time.Time
 }
 
 func SaveAs(c appengine.Context, title string) (*datastore.Key, error) {
+	key := datastore.NewIncompleteKey(c, "minutes", nil)
+
 	m1 := Minutes{
-		Title:   title,
+		Key:       key,
+		Title:     title,
 		CreatedAt: time.Now(),
 	}
 
 	// put
-	key := datastore.NewIncompleteKey(c, "minutes", nil)
 	_, err := datastore.Put(c, key, &m1)
 	return key, err
 }
