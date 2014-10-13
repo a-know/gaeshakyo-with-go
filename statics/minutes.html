@@ -1,14 +1,17 @@
 <html>
 <head>
   <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-  <title>議事録一覧</title>
+  <title>議事録</title>
 </head>
 <body>
-  <h1>議事録一覧</h1>
+  <h1>議事録</h1>
+
   <div id="content"></div>
-  <h2>新しく議事録を作成する</h2>
+
+  <h2>メモを追加する</h2>
+
   <form id="form" action="/dummy" method="post">
-    <p><input id="title" type="text" name="title" size="100" /></p>
+    <p><input id="memo" type="text" name="memo" size="100" /></p>
     <p><input type="submit" /></p>
   </form>
 
@@ -25,24 +28,28 @@
           // var minutes, li;
           $.each(data, function(_, minutes) {
             var li = $('<li/>')
-                          .append(
-                            $('<a/>')
-                            .attr('href', 'minutes.html?minutes=' + minutes['Key'])
-                            .text(minutes['Title'] + '(' + new Date(minutes['CreatedAt']) + ')')
-                          );
+                        .text(memo['Memo'] + '(' + new Date(memo['CreatedAt']) + ')');
             li.appendTo(ul);
           });
           ul.appendTo('#content');
+          setTimeout(refresh, 100000);
         };
         $.ajax({
-          url: '/showMinutes', type: 'get'
+          url: '/showMemo?minutes=' + minutes, type: 'get'
         }).success(onSuccess).error(onError);
       }
       refresh();
+      var href = window.location.href;
+      if (href.indexOf('?minutes=') < 0) {
+        window.location.href = 'index.html'
+        return;
+      }
+      minutes = href.split('?minutes=')[1];
+
       var submit = function(event) {
-        var title = $('#title');
-        if(!title.val()) {
-          title.focus();
+        var memo = $('#memo');
+        if(!memo.val()) {
+          memo.focus();
           return false;
         }
         var onError = function(jqXHR, textStatus, errorThrown) {
@@ -50,11 +57,11 @@
         };
         var onSuccess = function(data, textStatus, jqXHR) {
           alert('success')
-          title.val('');
-          refresh();
+          memo.val('');
+          // refresh();
         };
         $.ajax({
-          url: '/postMinutes', type: 'post', data: title
+          url: '/postMemo', type: 'post', data: {memo:memo.val(), minutes:minutes}
         }).success(onSuccess).error(onError);
         return false;
       };
