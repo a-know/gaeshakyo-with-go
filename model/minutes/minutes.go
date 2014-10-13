@@ -11,7 +11,7 @@ type Minutes struct {
 	CreatedAt time.Time
 }
 
-func Saveas(c appengine.Context, title string) (*datastore.Key, error) {
+func SaveAs(c appengine.Context, title string) (*datastore.Key, error) {
 	g1 := Minutes{
 		Title:   title,
 		CreatedAt: time.Now(),
