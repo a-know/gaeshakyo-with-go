@@ -12,14 +12,14 @@ type Minutes struct {
 }
 
 func SaveAs(c appengine.Context, title string) (*datastore.Key, error) {
-	g1 := Minutes{
+	m1 := Minutes{
 		Title:   title,
 		CreatedAt: time.Now(),
 	}
 
 	// put
-	key := datastore.NewIncompleteKey(c, "guestbook", nil)
-	_, err := datastore.Put(c, key, &g1)
+	key := datastore.NewIncompleteKey(c, "minutes", nil)
+	_, err := datastore.Put(c, key, &m1)
 	return key, err
 }
 
