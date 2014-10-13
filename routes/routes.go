@@ -5,6 +5,7 @@ import (
 
 	"controller/guestbook"
 	"controller/minutes"
+	"controller/memo"
 )
 
 func init() {
@@ -15,4 +16,6 @@ func init() {
 	// chapter 3
 	http.HandleFunc("/postMinutes", minutes.Post)
 	http.HandleFunc("/showMinutes", minutes.Show)
+	http.HandleFunc("/postMemo",    memo.Post)
+	http.HandleFunc("/showMemo",    memo.Show)
 }
