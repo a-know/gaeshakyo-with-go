@@ -65,7 +65,11 @@
           return false;
         }
         var onError = function(jqXHR, textStatus, errorThrown) {
-          alert('error');
+          if (jqXHR['status'] === 401) {
+            alert('議事録を作成する場合はログインしてください。');
+          } else {
+            alert('error');
+          }
         };
         var onSuccess = function(data, textStatus, jqXHR) {
           alert('success')
