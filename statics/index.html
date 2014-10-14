@@ -4,6 +4,7 @@
   <title>議事録一覧</title>
 </head>
 <body>
+  <div id="auth"></div>
   <h1>議事録一覧</h1>
   <div id="content"></div>
   <h2>新しく議事録を作成する</h2>
@@ -15,6 +16,24 @@
   <script type="text/javascript" src="https://code.jquery.com/jquery-1.11.1.min.js"></script>
   <script type="text/javascript">
     $(function() {
+      (function auth() {
+        var onError = function(jqXHR, textStatus, errorThrown) {
+          alert('error');
+        };
+        var onSuccess = function(data, textStatus, jqXHR) {
+          $('#auth a').remove();
+          var a = $('<a/>').appendTo('#auth');
+          if (data['LoggedIn'] === true) {
+            a.attr('href', data['LogoutURL']).text('ログアウト');
+          } else {
+            a.attr('href', data['LoginURL']).text('ログイン');
+          }
+        };
+        $.ajax({
+          url: '/auth', type: 'get'
+        }).success(onSuccess).error(onError);
+      })();
+
       function refresh() {
         var onError = function(jqXHR, textStatus, errorThrown) {
           alert('error');

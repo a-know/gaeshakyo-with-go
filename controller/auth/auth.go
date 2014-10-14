@@ -5,7 +5,6 @@ import (
 	"appengine/user"
 	"encoding/json"
 	"net/http"
-
 	"dto"
 )
 
@@ -24,7 +23,7 @@ func Auth(w http.ResponseWriter, r *http.Request) {
 	} else {
 		url, url_err = user.LoginURL(c, "/statics/index.html")
 		dto.LoggedIn  = false
-		dto.LogoutURL = url
+		dto.LoginURL = url
 	}
 	if url_err != nil {
 		http.Error(w, url_err.Error(), http.StatusInternalServerError)
