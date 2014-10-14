@@ -8,3 +8,9 @@ handlers:
   static_dir: statics
 - url: /.*
   script: _go_app
+- url: /auth/.*
+  script: _go_app
+  login: required
+- url: /admin/.*
+  script: _go_app
+  login: admin
