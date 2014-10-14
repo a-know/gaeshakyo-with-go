@@ -12,7 +12,7 @@ import (
 type Minutes struct {
 	Key       *datastore.Key
 	Title     string
-	Author    *user.User
+	Author    user.User
 	CreatedAt time.Time
 }
 
@@ -22,7 +22,7 @@ func SaveAs(c appengine.Context, title string, u *user.User) (*datastore.Key, er
 	m1 := Minutes{
 		Key:       key,
 		Title:     title,
-		Author:    u,
+		Author:    *u,
 		CreatedAt: time.Now(),
 	}
 
@@ -38,4 +38,3 @@ func DescList(c appengine.Context) (minutes []Minutes, err error) {
 
 	return minutes, err
 }
-

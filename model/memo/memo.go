@@ -13,7 +13,7 @@ type Memo struct {
 	Key       *datastore.Key
 	Memo      string
 	Minutes   *datastore.Key
-	Author    *user.User
+	Author    user.User
 	CreatedAt time.Time
 }
 
@@ -24,7 +24,7 @@ func SaveAs(c appengine.Context, minutesKey *datastore.Key, memoString string, u
 		Key:       key,
 		Memo:      memoString,
 		Minutes:   minutesKey,
-		Author:    u,
+		Author:    *u,
 		CreatedAt: time.Now(),
 	}
 
