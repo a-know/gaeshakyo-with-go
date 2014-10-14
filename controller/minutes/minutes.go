@@ -2,6 +2,7 @@ package minutes
 
 import (
 	"appengine"
+	"appengine/user"
 	"encoding/json"
 	"net/http"
 
@@ -10,10 +11,17 @@ import (
 
 func Post(w http.ResponseWriter, r *http.Request) {
 	c := appengine.NewContext(r)
+	u := user.Current(c)
+
+	if u == nil {
+		http.Error(w, "you must to login", http.StatusUnauthorized)
+		return
+	}
+
 	title := r.FormValue("title")
 
 	if title != "" {
-		_, err := minutes.SaveAs(c, title)
+		_, err := minutes.SaveAs(c, title, u)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return

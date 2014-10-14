@@ -3,23 +3,26 @@ package minutes
 import (
 	"appengine"
 	"appengine/datastore"
+	"appengine/user"
 	"time"
 
 	"code.google.com/p/go-uuid/uuid"
 )
 
 type Minutes struct {
-	Key *datastore.Key
-	Title   string
+	Key       *datastore.Key
+	Title     string
+	Author    *user.User
 	CreatedAt time.Time
 }
 
-func SaveAs(c appengine.Context, title string) (*datastore.Key, error) {
+func SaveAs(c appengine.Context, title string, u *user.User) (*datastore.Key, error) {
 	key := datastore.NewKey(c, "minutes", uuid.New(), 0, nil)
 
 	m1 := Minutes{
 		Key:       key,
 		Title:     title,
+		Author:    u,
 		CreatedAt: time.Now(),
 	}
 

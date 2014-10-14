@@ -3,6 +3,7 @@ package memo
 import (
 	"appengine"
 	"appengine/datastore"
+	"appengine/user"
 	"encoding/json"
 	"net/http"
 
@@ -11,7 +12,20 @@ import (
 
 func Post(w http.ResponseWriter, r *http.Request) {
 	c := appengine.NewContext(r)
+	u := user.Current(c)
+
+	if u == nil {
+		http.Error(w, "you must to login", http.StatusUnauthorized)
+		return
+	}
+
 	memoString := r.FormValue("memo")
+
+	if memoString == "" {
+		http.Error(w, "memo is not set", http.StatusBadRequest)
+		return
+	}
+
 	minutesKeyString := r.FormValue("minutes")
 	minutesKey, err := datastore.DecodeKey(minutesKeyString)
 
@@ -20,12 +34,7 @@ func Post(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if memoString == "" {
-		http.Error(w, "memo is not set", http.StatusBadRequest)
-		return
-	}
-
-	_, err = memo.SaveAs(c, minutesKey ,memoString)
+	_, err = memo.SaveAs(c, minutesKey ,memoString, u)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return

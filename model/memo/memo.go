@@ -3,25 +3,28 @@ package memo
 import (
 	"appengine"
 	"appengine/datastore"
+	"appengine/user"
 	"time"
 
 	"code.google.com/p/go-uuid/uuid"
 )
 
 type Memo struct {
-	Key *datastore.Key
-	Memo   string
-	Minutes *datastore.Key
+	Key       *datastore.Key
+	Memo      string
+	Minutes   *datastore.Key
+	Author    *user.User
 	CreatedAt time.Time
 }
 
-func SaveAs(c appengine.Context, minutesKey *datastore.Key, memoString string) (*datastore.Key, error) {
+func SaveAs(c appengine.Context, minutesKey *datastore.Key, memoString string, u *user.User) (*datastore.Key, error) {
 	key := datastore.NewKey(c, "memo", uuid.New(), 0, nil)
 
 	m1 := Memo{
 		Key:       key,
 		Memo:      memoString,
 		Minutes:   minutesKey,
+		Author:    u,
 		CreatedAt: time.Now(),
 	}
 
