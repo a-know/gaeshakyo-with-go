@@ -17,6 +17,8 @@ type Minutes struct {
 	CreatedAt time.Time
 }
 
+const descListMemkey = "LIST_OF_MINUTES"
+
 func SaveAs(c appengine.Context, title string, u *user.User) (*datastore.Key, error) {
 	key := datastore.NewKey(c, "minutes", uuid.New(), 0, nil)
 
@@ -32,8 +34,6 @@ func SaveAs(c appengine.Context, title string, u *user.User) (*datastore.Key, er
 	memcache.Delete(c, descListMemkey)
 	return key, err
 }
-
-const descListMemkey = "LIST_OF_MINUTES"
 
 func DescList(c appengine.Context) (minutes []Minutes, err error) {
 	memcache.Gob.Get(c, descListMemkey, &minutes)
