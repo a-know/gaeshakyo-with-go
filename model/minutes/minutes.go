@@ -32,8 +32,10 @@ func SaveAs(c appengine.Context, title string, u *user.User) (*datastore.Key, er
 	return key, err
 }
 
+const descListMemkey = "LIST_OF_MINUTES"
+
 func DescList(c appengine.Context) (minutes []Minutes, err error) {
-	memcache.Gob.Get(c, "LIST_OF_MINUTES", &minutes)
+	memcache.Gob.Get(c, descListMemkey, &minutes)
 
 	// item not found in memcache
 	if minutes == nil {
@@ -42,7 +44,7 @@ func DescList(c appengine.Context) (minutes []Minutes, err error) {
 
 		// put item to memcache
 		mem_item := &memcache.Item{
-			Key:    "LIST_OF_MINUTES",
+			Key:    descListMemkey,
 			Object: minutes,
 		}
 		memcache.Gob.Add(c, mem_item)
