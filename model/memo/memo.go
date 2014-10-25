@@ -3,6 +3,7 @@ package memo
 import (
 	"appengine"
 	"appengine/datastore"
+	"appengine/memcache"
 	"appengine/user"
 	"time"
 
@@ -17,6 +18,8 @@ type Memo struct {
 	CreatedAt time.Time
 }
 
+const ascListMemkey = "LIST_OF_MEMO"
+
 func SaveAs(c appengine.Context, minutesKey *datastore.Key, memoString string, u *user.User) (*datastore.Key, error) {
 	key := datastore.NewKey(c, "memo", uuid.New(), 0, nil)
 
@@ -30,13 +33,25 @@ func SaveAs(c appengine.Context, minutesKey *datastore.Key, memoString string, u
 
 	// put
 	_, err := datastore.Put(c, key, &m1)
+	memcache.Delete(c, ascListMemkey)
 	return key, err
 }
 
 func AscList(c appengine.Context, minutesKey *datastore.Key) (memo []Memo, err error) {
-	q := datastore.NewQuery("memo").Filter("Minutes =", minutesKey).Order("CreatedAt")
+	memcache.Gob.Get(c, ascListMemkey, &memo)
 
-	_, err = q.GetAll(c, &memo)
+	// item not found in memcache
+	if memo == nil {
+		q := datastore.NewQuery("memo").Filter("Minutes =", minutesKey).Order("CreatedAt")
+		_, err = q.GetAll(c, &memo)
+
+		// put item to memcache
+		mem_item := &memcache.Item{
+			Key:    ascListMemkey,
+			Object: memo,
+		}
+		memcache.Gob.Add(c, mem_item)
+	}
 
 	return memo, err
 }
