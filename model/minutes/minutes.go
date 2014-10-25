@@ -3,6 +3,7 @@ package minutes
 import (
 	"appengine"
 	"appengine/datastore"
+	"appengine/memcache"
 	"appengine/user"
 	"time"
 
@@ -16,6 +17,8 @@ type Minutes struct {
 	CreatedAt time.Time
 }
 
+const descListMemkey = "LIST_OF_MINUTES"
+
 func SaveAs(c appengine.Context, title string, u *user.User) (*datastore.Key, error) {
 	key := datastore.NewKey(c, "minutes", uuid.New(), 0, nil)
 
@@ -28,13 +31,25 @@ func SaveAs(c appengine.Context, title string, u *user.User) (*datastore.Key, er
 
 	// put
 	_, err := datastore.Put(c, key, &m1)
+	memcache.Delete(c, descListMemkey)
 	return key, err
 }
 
 func DescList(c appengine.Context) (minutes []Minutes, err error) {
-	q := datastore.NewQuery("minutes").Order("-CreatedAt")
+	memcache.Gob.Get(c, descListMemkey, &minutes)
 
-	_, err = q.GetAll(c, &minutes)
+	// item not found in memcache
+	if minutes == nil {
+		q := datastore.NewQuery("minutes").Order("-CreatedAt")
+		_, err = q.GetAll(c, &minutes)
+
+		// put item to memcache
+		mem_item := &memcache.Item{
+			Key:    descListMemkey,
+			Object: minutes,
+		}
+		memcache.Gob.Add(c, mem_item)
+	}
 
 	return minutes, err
 }
