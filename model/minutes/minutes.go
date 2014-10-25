@@ -29,6 +29,7 @@ func SaveAs(c appengine.Context, title string, u *user.User) (*datastore.Key, er
 
 	// put
 	_, err := datastore.Put(c, key, &m1)
+	memcache.Delete(c, descListMemkey)
 	return key, err
 }
 
