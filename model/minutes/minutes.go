@@ -55,7 +55,7 @@ func DescList(c appengine.Context) (minutes []Minutes, err error) {
 	return minutes, err
 }
 
-func incrementMemoCount(c appengine.Context, minutesKey *datastore.Key) error {
+func IncrementMemoCount(c appengine.Context, minutesKey *datastore.Key) error {
 	datastore.RunInTransaction(c, func(c appengine.Context) error {
 		var m Minutes
 		err := datastore.Get(c, minutesKey, &m)
