@@ -7,6 +7,7 @@ import (
 	"controller/guestbook"
 	"controller/memo"
 	"controller/minutes"
+	"controller/tq"
 )
 
 func init() {
@@ -22,5 +23,8 @@ func init() {
 
 	// chapter 3.3
 	http.HandleFunc("/auth", auth.Auth)
+
+	// chapter 3.5
+	http.HandleFunc("/tq/IncrementMemoCount", tq.IncrementMemoCount)
 
 }
