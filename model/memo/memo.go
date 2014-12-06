@@ -6,6 +6,7 @@ import (
 	"appengine/memcache"
 	"appengine/taskqueue"
 	"appengine/user"
+	"net/url"
 	"time"
 
 	"code.google.com/p/go-uuid/uuid"
@@ -37,7 +38,9 @@ func SaveAs(c appengine.Context, minutesKey *datastore.Key, memoString string, u
 	memcache.Delete(c, ascListMemkey)
 
 	// post taskqueue
-	task := taskqueue.NewPOSTTask("/tq/IncrementMemoCount", map[string][]string{"minutesKey": {minutesKey.Encode()}})
+	task := taskqueue.NewPOSTTask("/tq/IncrementMemoCount", url.Values{
+		"minutesKey": {minutesKey.Encode()},
+	})
 	_, err = taskqueue.Add(c, task, "")
 
 	return key, err
