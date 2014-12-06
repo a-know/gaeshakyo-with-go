@@ -64,6 +64,7 @@ func IncrementMemoCount(c appengine.Context, minutesKey *datastore.Key) error {
 		}
 		m.MemoCount++
 		_, err = datastore.Put(c, minutesKey, &m)
+		memcache.Delete(c, descListMemkey)
 		return err
 	}, nil)
 }
