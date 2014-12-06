@@ -14,6 +14,7 @@ type Minutes struct {
 	Key       *datastore.Key
 	Title     string
 	Author    user.User
+	MemoCount int64
 	CreatedAt time.Time
 }
 
@@ -31,6 +32,9 @@ func SaveAs(c appengine.Context, title string, u *user.User) (*datastore.Key, er
 
 	// put
 	_, err := datastore.Put(c, key, &m1)
+	if err != nil {
+		return key, err
+	}
 	memcache.Delete(c, descListMemkey)
 	return key, err
 }
@@ -52,4 +56,18 @@ func DescList(c appengine.Context) (minutes []Minutes, err error) {
 	}
 
 	return minutes, err
+}
+
+func IncrementMemoCount(c appengine.Context, minutesKey *datastore.Key) error {
+	return datastore.RunInTransaction(c, func(c appengine.Context) error {
+		var m Minutes
+		err := datastore.Get(c, minutesKey, &m)
+		if err != nil {
+			return err
+		}
+		m.MemoCount++
+		_, err = datastore.Put(c, minutesKey, &m)
+		memcache.Delete(c, descListMemkey)
+		return err
+	}, nil)
 }

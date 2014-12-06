@@ -3,10 +3,11 @@ package routes
 import (
 	"net/http"
 
-	"controller/guestbook"
-	"controller/minutes"
-	"controller/memo"
 	"controller/auth"
+	"controller/guestbook"
+	"controller/memo"
+	"controller/minutes"
+	"controller/tq"
 )
 
 func init() {
@@ -17,10 +18,13 @@ func init() {
 	// chapter 3.2
 	http.HandleFunc("/postMinutes", minutes.Post)
 	http.HandleFunc("/showMinutes", minutes.Show)
-	http.HandleFunc("/postMemo",    memo.Post)
-	http.HandleFunc("/showMemo",    memo.Show)
+	http.HandleFunc("/postMemo", memo.Post)
+	http.HandleFunc("/showMemo", memo.Show)
 
 	// chapter 3.3
 	http.HandleFunc("/auth", auth.Auth)
+
+	// chapter 3.5
+	http.HandleFunc("/tq/IncrementMemoCount", tq.IncrementMemoCount)
 
 }

@@ -47,7 +47,7 @@
                           .append(
                             $('<a/>')
                             .attr('href', 'minutes.html?minutes=' + minutes['Key'])
-                            .text(minutes['Title'] + '(' + new Date(minutes['CreatedAt']) + ')')
+                            .text(minutes['Title'] + '(' + new Date(minutes['CreatedAt']) + ')' + ' メモ数（' + minutes['MemoCount'] + '）')
                           );
             li.appendTo(ul);
           });
