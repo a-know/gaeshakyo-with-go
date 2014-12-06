@@ -4,6 +4,7 @@ import (
 	"appengine"
 	"appengine/datastore"
 	"appengine/memcache"
+	"appengine/taskqueue"
 	"appengine/user"
 	"time"
 
@@ -34,6 +35,11 @@ func SaveAs(c appengine.Context, minutesKey *datastore.Key, memoString string, u
 	// put
 	_, err := datastore.Put(c, key, &m1)
 	memcache.Delete(c, ascListMemkey)
+
+	// post taskqueue
+	task := taskqueue.NewPOSTTask("/tq/IncrementMemoCount", map[string][]string{"minutesKey": {minutesKey.Encode()}})
+	_, err = taskqueue.Add(c, task, "")
+
 	return key, err
 }
 
