@@ -4,6 +4,7 @@ import (
 	"net/http"
 
 	"controller/auth"
+	"controller/cron"
 	"controller/guestbook"
 	"controller/memo"
 	"controller/minutes"
@@ -26,5 +27,8 @@ func init() {
 
 	// chapter 3.5
 	http.HandleFunc("/tq/IncrementMemoCount", tq.IncrementMemoCount)
+
+	// chapter 3.6
+	http.HandleFunc("/cron/UpdateMemoCount", cron.UpdateMemoCount)
 
 }
