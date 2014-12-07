@@ -80,7 +80,7 @@ func QueryForUpdateMemoCount(c appengine.Context) (minutesKeyList []*datastore.K
 	before24hours := now.AddDate(0, 0, -1)
 	before48hours := now.AddDate(0, 0, -2)
 	q := datastore.NewQuery("minutes").Filter("UpdatedAt <", before24hours).Filter("UpdatedAt >", before48hours).KeysOnly()
-	_, err = q.GetAll(c, &minutesKeyList)
+	minutesKeyList, err = q.GetAll(c, nil)
 	return
 }
 
@@ -105,6 +105,7 @@ func UpdateMemoCount(c appengine.Context, minutesKey *datastore.Key) (err error)
 	if err != nil {
 		return err
 	}
+
 	memcache.Delete(c, descListMemkey)
 	return
 }
