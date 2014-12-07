@@ -29,6 +29,7 @@ func SaveAs(c appengine.Context, title string, u *user.User) (*datastore.Key, er
 		Title:     title,
 		Author:    *u,
 		CreatedAt: time.Now(),
+		UpdatedAt: time.Now(),
 	}
 
 	// put
@@ -67,6 +68,7 @@ func IncrementMemoCount(c appengine.Context, minutesKey *datastore.Key) error {
 			return err
 		}
 		m.MemoCount++
+		m.UpdatedAt = time.Now()
 		_, err = datastore.Put(c, minutesKey, &m)
 		memcache.Delete(c, descListMemkey)
 		return err
