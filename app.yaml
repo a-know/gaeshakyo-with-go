@@ -11,6 +11,9 @@ handlers:
 - url: /tq/.*
   script: _go_app
   login: admin
+- url: /cron/.*
+  script: _go_app
+  login: admin
 - url: /auth/.*
   script: _go_app
   login: required

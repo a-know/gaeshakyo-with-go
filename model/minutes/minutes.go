@@ -14,8 +14,9 @@ type Minutes struct {
 	Key       *datastore.Key
 	Title     string
 	Author    user.User
-	MemoCount int64
+	MemoCount int
 	CreatedAt time.Time
+	UpdatedAt time.Time
 }
 
 const descListMemkey = "LIST_OF_MINUTES"
@@ -28,6 +29,7 @@ func SaveAs(c appengine.Context, title string, u *user.User) (*datastore.Key, er
 		Title:     title,
 		Author:    *u,
 		CreatedAt: time.Now(),
+		UpdatedAt: time.Now(),
 	}
 
 	// put
@@ -66,8 +68,44 @@ func IncrementMemoCount(c appengine.Context, minutesKey *datastore.Key) error {
 			return err
 		}
 		m.MemoCount++
+		m.UpdatedAt = time.Now()
 		_, err = datastore.Put(c, minutesKey, &m)
 		memcache.Delete(c, descListMemkey)
 		return err
 	}, nil)
+}
+
+func QueryForUpdateMemoCount(c appengine.Context) (minutesKeyList []*datastore.Key, err error) {
+	now := time.Now()
+	before24hours := now.AddDate(0, 0, -1)
+	before48hours := now.AddDate(0, 0, -2)
+	q := datastore.NewQuery("minutes").Filter("UpdatedAt <", before24hours).Filter("UpdatedAt >", before48hours).KeysOnly()
+	minutesKeyList, err = q.GetAll(c, nil)
+	return
+}
+
+func UpdateMemoCount(c appengine.Context, minutesKey *datastore.Key) (err error) {
+	var count int
+	q := datastore.NewQuery("memo").Filter("Minutes =", minutesKey)
+	count, err = q.Count(c)
+	if err != nil {
+		return err
+	}
+
+	var m Minutes
+	err = datastore.Get(c, minutesKey, &m)
+	if err != nil {
+		return err
+	}
+
+	m.MemoCount = count
+	m.UpdatedAt = time.Now()
+
+	_, err = datastore.Put(c, minutesKey, &m)
+	if err != nil {
+		return err
+	}
+
+	memcache.Delete(c, descListMemkey)
+	return
 }
