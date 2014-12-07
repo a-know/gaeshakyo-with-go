@@ -1,0 +1,5 @@
+cron:
+- description: count and update MemoCount
+  url: /cron/UpdateMemoCount
+  schedule: every monday 01:23
+  timezone: Asia/Tokyo
