@@ -16,6 +16,7 @@ type Minutes struct {
 	Author    user.User
 	MemoCount int64
 	CreatedAt time.Time
+	UpdatedAt time.Time
 }
 
 const descListMemkey = "LIST_OF_MINUTES"
