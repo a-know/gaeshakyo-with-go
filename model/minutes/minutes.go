@@ -14,7 +14,7 @@ type Minutes struct {
 	Key       *datastore.Key
 	Title     string
 	Author    user.User
-	MemoCount int64
+	MemoCount int
 	CreatedAt time.Time
 	UpdatedAt time.Time
 }
@@ -81,5 +81,30 @@ func QueryForUpdateMemoCount(c appengine.Context) (minutesKeyList []*datastore.K
 	before48hours := now.AddDate(0, 0, -2)
 	q := datastore.NewQuery("minutes").Filter("UpdatedAt <", before24hours).Filter("UpdatedAt >", before48hours).KeysOnly()
 	_, err = q.GetAll(c, &minutesKeyList)
+	return
+}
+
+func UpdateMemoCount(c appengine.Context, minutesKey *datastore.Key) (err error) {
+	var count int
+	q := datastore.NewQuery("memo").Filter("Minutes =", minutesKey)
+	count, err = q.Count(c)
+	if err != nil {
+		return err
+	}
+
+	var m Minutes
+	err = datastore.Get(c, minutesKey, &m)
+	if err != nil {
+		return err
+	}
+
+	m.MemoCount = count
+	m.UpdatedAt = time.Now()
+
+	_, err = datastore.Put(c, minutesKey, &m)
+	if err != nil {
+		return err
+	}
+	memcache.Delete(c, descListMemkey)
 	return
 }
