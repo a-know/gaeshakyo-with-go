@@ -20,6 +20,3 @@ handlers:
 - url: /admin/.*
   script: _go_app
   login: admin
-
-inbound_services:
-  - mail
