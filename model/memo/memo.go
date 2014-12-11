@@ -2,10 +2,12 @@ package memo
 
 import (
 	"appengine"
+	"appengine/channel"
 	"appengine/datastore"
 	"appengine/memcache"
 	"appengine/taskqueue"
 	"appengine/user"
+	"encoding/json"
 	"net/url"
 	"time"
 
@@ -63,4 +65,33 @@ func AscList(c appengine.Context, minutesKey *datastore.Key) (memo []Memo, err e
 	}
 
 	return memo, err
+}
+
+func pushNotification(c appengine.Context, memoKey *datastore.Key) error {
+	var m Memo
+	err := datastore.Get(c, memoKey, &m)
+	if err != nil {
+		return err
+	}
+
+	q := datastore.NewQuery("minutes_channel").Filter("MinutesKey =", m.Minutes).KeysOnly()
+	minutesChannelKeyList, q_err := q.GetAll(c, nil)
+	if q_err != nil {
+		return q_err
+	}
+
+	// push 通知する内容 = 追加された memo の内容、なので、それをあらかじめ json 化しておく
+	js, js_err := json.Marshal(m)
+	if js_err != nil {
+		return js_err
+	}
+
+	for _, minutesChannelKey := range minutesChannelKeyList {
+		send_err := channel.SendJSON(c, minutesChannelKey.StringID(), js)
+		if send_err != nil {
+			c.Errorf("failed to push notification: %v", send_err)
+			return send_err
+		}
+	}
+	return nil
 }
