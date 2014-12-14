@@ -17,6 +17,7 @@
   </form>
 
   <script type="text/javascript" src="https://code.jquery.com/jquery-1.11.1.min.js"></script>
+  <script type="text/javascript" src="/_ah/channel/jsapi"></script>
   <script type="text/javascript">
     $(function() {
       (function auth() {
@@ -58,7 +59,7 @@
             li.appendTo(ul);
           });
           ul.appendTo('#content');
-          setTimeout(refresh, 100000);
+          // setTimeout(refresh, 100000);
         };
         $.ajax({
           url: '/showMemo?minutes=' + minutes, type: 'get'
@@ -91,6 +92,20 @@
         return false;
       };
       $('#form').submit(submit);
+
+      // for channel service
+      $.ajax({url: '/channel', type: 'get', data: { minutes: minutes }})
+        .success(function (data) {
+          var channel = new goog.appengine.Channel(data['Token']);
+          var socket = channel.open();
+          socket.onmessage = function(message) {
+            var memoString = eval(message['data']);
+            var memo = $.parseJSON(memoString);
+            $('<li/>')
+              .appendTo('#content ul')
+              .text(memo['Memo'] + '(' + new Date(memo['CreatedAt']) + ')');
+          };
+        });
     });
   </script>
 </body>

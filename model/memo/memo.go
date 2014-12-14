@@ -87,7 +87,7 @@ func PushNotification(c appengine.Context, memoKey *datastore.Key) error {
 	}
 
 	for _, minutesChannelKey := range minutesChannelKeyList {
-		send_err := channel.SendJSON(c, minutesChannelKey.StringID(), js)
+		send_err := channel.SendJSON(c, minutesChannelKey.StringID(), string(js))
 		if send_err != nil {
 			c.Errorf("failed to push notification: %v", send_err)
 			return send_err
