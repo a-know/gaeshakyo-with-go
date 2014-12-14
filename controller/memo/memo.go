@@ -34,11 +34,12 @@ func Post(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	_, err = memo.SaveAs(c, minutesKey ,memoString, u)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+	memoKey, put_err := memo.SaveAs(c, minutesKey, memoString, u)
+	if put_err != nil {
+		http.Error(w, put_err.Error(), http.StatusInternalServerError)
 		return
 	}
+	_ = memo.PushNotification(c, memoKey) // notofication に失敗しても特にエラーとはしない
 }
 
 func Show(w http.ResponseWriter, r *http.Request) {

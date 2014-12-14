@@ -4,6 +4,7 @@ import (
 	"net/http"
 
 	"controller/auth"
+	"controller/channel"
 	"controller/cron"
 	"controller/guestbook"
 	"controller/memo"
@@ -30,5 +31,8 @@ func init() {
 
 	// chapter 3.6
 	http.HandleFunc("/cron/UpdateMemoCount", cron.UpdateMemoCount)
+
+	// chapter 3.8
+	http.HandleFunc("/channel", channel.CreateToken)
 
 }
