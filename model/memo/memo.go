@@ -67,7 +67,7 @@ func AscList(c appengine.Context, minutesKey *datastore.Key) (memo []Memo, err e
 	return memo, err
 }
 
-func pushNotification(c appengine.Context, memoKey *datastore.Key) error {
+func PushNotification(c appengine.Context, memoKey *datastore.Key) error {
 	var m Memo
 	err := datastore.Get(c, memoKey, &m)
 	if err != nil {
