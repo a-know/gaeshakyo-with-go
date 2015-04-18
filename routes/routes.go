@@ -35,4 +35,7 @@ func init() {
 	// chapter 3.8
 	http.HandleFunc("/channel", channel.CreateToken)
 
+	// chapter 3.9
+	http.HandleFunc("/deleteMinutes", minutes.Delete)
+
 }

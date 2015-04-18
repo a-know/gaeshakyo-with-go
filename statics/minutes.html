@@ -7,6 +7,8 @@
   <div id="auth"></div>
   <h1>議事録</h1>
 
+  <div><input type="button" id="deleteMinutes" value="TSV に変換して削除" /></div>
+
   <div id="content"></div>
 
   <h2>メモを追加する</h2>
@@ -106,6 +108,25 @@
               .text(memo['Memo'] + '(' + new Date(memo['CreatedAt']) + ')');
           };
         });
+
+      // for delete
+      var deleteMinutes = function(event) {
+        var onError = function(jqXHR, textStatus, errorThrown) {
+          if (jqXHR['status'] === 403 || jqXHR['status'] === 401) {
+            alert('議事録の作成者以外は議事録の削除はできません。');
+          } else {
+            alert('error');
+          }
+        };
+        var onSuccess = function(data, textStatus, jqXHR) {
+          alert('TSV をダウンロードする URL がメールで送信されました')
+          window.location.href = 'index.html'
+        };
+        $.ajax({
+          url: '/deleteMinutes', type: 'post', data: {delete: minutes}
+        }).success(onSuccess).error(onError);
+      };
+      $('#deleteMinutes').click(deleteMinutes);
     });
   </script>
 </body>
