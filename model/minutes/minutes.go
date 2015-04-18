@@ -1,13 +1,22 @@
 package minutes
 
 import (
+	"net/http"
+
 	"appengine"
 	"appengine/datastore"
 	"appengine/memcache"
+	"appengine/urlfetch"
 	"appengine/user"
 	"time"
 
 	"code.google.com/p/go-uuid/uuid"
+	"golang.org/x/oauth2"
+	"golang.org/x/oauth2/google"
+	"google.golang.org/cloud"
+	"google.golang.org/cloud/storage"
+
+	"model/memo"
 )
 
 type Minutes struct {
@@ -125,5 +134,42 @@ func Delete(c appengine.Context, minutesKey *datastore.Key) (err error) {
 	if err != nil {
 		return err
 	}
+	return
+}
+
+func ExportAsTsv(c appengine.Context, minutes Minutes) (fileName string, err error) {
+	bucket := "gae-gaeshakyo-with-go-bucket"
+	// Minutes タイトルの取得
+	fileName = minutes.Title
+	// Minutes に紐付く Memo の取得
+	memo_list, memolist_err := memo.AscList(c, minutes.Key)
+	if memolist_err != nil {
+		return fileName, memolist_err
+	}
+
+	// see https://cloud.google.com/appengine/docs/go/googlecloudstorageclient/getstarted
+	hc := &http.Client{}
+	ctx := cloud.NewContext(appengine.AppID(c), hc)
+	hc.Transport = &oauth2.Transport{
+		Source: google.AppEngineTokenSource(ctx, storage.ScopeFullControl),
+		Base:   &urlfetch.Transport{Context: c},
+	}
+
+	wc := storage.NewWriter(ctx, bucket, fileName)
+	wc.ContentType = "text/tab-separated-values"
+
+	// 全 Memo の内容を書き出し
+	var content string
+	for _, memo := range memo_list {
+		content = "\"" + memo.CreatedAt.String() + "\"\t\"" + memo.Author.Email + "\"\t\"" + memo.Memo + "\"\n"
+		if _, write_err := wc.Write([]byte(content)); write_err != nil {
+			return fileName, write_err
+		}
+	}
+
+	if close_err := wc.Close(); close_err != nil {
+		return fileName, close_err
+	}
+
 	return
 }
