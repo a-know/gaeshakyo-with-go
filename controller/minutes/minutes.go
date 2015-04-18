@@ -2,6 +2,7 @@ package minutes
 
 import (
 	"appengine"
+	"appengine/datastore"
 	"appengine/mail"
 	"appengine/user"
 	"encoding/json"
@@ -46,6 +47,64 @@ func Show(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "application/json")
 	w.Write(js)
+}
+
+func Delete(w http.ResponseWriter, r *http.Request) {
+	c := appengine.NewContext(r)
+	u := user.Current(c)
+
+	// ログインチェック
+	if u == nil {
+		http.Error(w, "you must to login", http.StatusUnauthorized)
+		return
+	}
+
+	// 削除対象の議事録のキーを取得
+	minutesKeyString := r.FormValue("delete")
+	minutesKey, err := datastore.DecodeKey(minutesKeyString)
+	if err != nil {
+		http.Error(w, "not specified delete target", http.StatusBadRequest)
+		return
+	}
+
+	// 議事録の取得
+	var m minutes.Minutes
+	err = datastore.Get(c, minutesKey, &m)
+	if err != nil {
+		http.Error(w, "Could not get specified minutes", http.StatusInternalServerError)
+		return
+	}
+	author := m.Author
+	if &author != u {
+		http.Error(w, "You are not author of this minutes", http.StatusForbidden)
+		return
+	}
+
+	// tsv ファイルの作成とエンティティの削除
+	fileName, export_err := minutes.ExportAsTsv(c, m)
+	if export_err != nil {
+		http.Error(w, "Failed to export tsv", http.StatusInternalServerError)
+		return
+	}
+	minutes.Delete(c, m.Key)
+
+	// ダウンロードURL をメールで送信する
+	url, url_err := minutes.GetTsvUrl(c, fileName)
+	if url_err != nil {
+		http.Error(w, "Failed to generate download url", http.StatusInternalServerError)
+		return
+	}
+
+	msg := &mail.Message{
+		Sender:  "minutes@gaeshakyo-with-go.appspotmail.com",
+		To:      []string{u.Email},
+		Subject: "議事録「" + m.Title + "」の削除に伴い、内容が TSV ファイルに変換されました。",
+		Body:    url,
+	}
+	if mail_err := mail.Send(c, msg); mail_err != nil {
+		http.Error(w, "Failed to send a mail", http.StatusInternalServerError)
+		return
+	}
 }
 
 func sendMail(r *http.Request, c appengine.Context, minutesKeyString string) {

@@ -29,6 +29,7 @@ type Minutes struct {
 }
 
 const descListMemkey = "LIST_OF_MINUTES"
+const bucket = "gaeshakyo-with-go-bucket"
 
 func SaveAs(c appengine.Context, title string, u *user.User) (*datastore.Key, error) {
 	key := datastore.NewKey(c, "minutes", uuid.New(), 0, nil)
@@ -138,7 +139,6 @@ func Delete(c appengine.Context, minutesKey *datastore.Key) (err error) {
 }
 
 func ExportAsTsv(c appengine.Context, minutes Minutes) (fileName string, err error) {
-	bucket := "gaeshakyo-with-go-bucket"
 	// Minutes タイトルの取得
 	fileName = minutes.Title
 	// Minutes に紐付く Memo の取得
@@ -172,4 +172,17 @@ func ExportAsTsv(c appengine.Context, minutes Minutes) (fileName string, err err
 	}
 
 	return fileName, nil
+}
+
+func GetTsvUrl(c appengine.Context, fileName string) (url string, err error) {
+	// see http://godoc.org/google.golang.org/cloud/storage#SignedURL
+	hc := &http.Client{}
+	ctx := cloud.NewContext(appengine.AppID(c), hc)
+	hc.Transport = &oauth2.Transport{
+		Source: google.AppEngineTokenSource(ctx, storage.ScopeFullControl),
+		Base:   &urlfetch.Transport{Context: c},
+	}
+
+	url, err = storage.SignedURL(bucket, fileName, &storage.SignedURLOptions{Expires: time.Now().AddDate(1, 0, 0)}) // 1年後に失効
+	return
 }
