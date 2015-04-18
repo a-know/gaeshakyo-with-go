@@ -30,7 +30,7 @@ type Minutes struct {
 }
 
 const descListMemkey = "LIST_OF_MINUTES"
-const bucket = "gaeshakyo-with-go.appspot.com"
+const bucket = "gaeshakyo-with-go-bucket"
 
 func SaveAs(c appengine.Context, title string, u *user.User) (*datastore.Key, error) {
 	key := datastore.NewKey(c, "minutes", uuid.New(), 0, nil)
