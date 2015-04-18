@@ -109,3 +109,20 @@ func UpdateMemoCount(c appengine.Context, minutesKey *datastore.Key) (err error)
 	memcache.Delete(c, descListMemkey)
 	return
 }
+
+func Delete(c appengine.Context, minutesKey *datastore.Key) (err error) {
+	memcache.Delete(c, minutesKey)
+	memcache.Delete(c, descListMemkey)
+	// 議事録に紐付くメモの取得
+	q := datastore.NewQuery("memo").Filter("Minutes =", minutesKey).KeysOnly()
+	memoKeyList, err = q.GetAll(c, nil)
+
+	err = datastore.DeleteMulti(c, memoKeyList)
+	if err != nil {
+		return err
+	}
+	err = datastore.Delete(c, minutesKey)
+	if err != nil {
+		return err
+	}
+}
