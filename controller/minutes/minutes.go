@@ -8,6 +8,8 @@ import (
 	"encoding/json"
 	"net/http"
 
+	newappengine "google.golang.org/appengine"
+
 	"model/minutes"
 )
 
@@ -51,6 +53,7 @@ func Show(w http.ResponseWriter, r *http.Request) {
 
 func Delete(w http.ResponseWriter, r *http.Request) {
 	c := appengine.NewContext(r)
+	nc := newappengine.NewContext(r)
 	u := user.Current(c)
 
 	// ログインチェック
@@ -81,7 +84,7 @@ func Delete(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// tsv ファイルの作成とエンティティの削除
-	fileName, export_err := minutes.ExportAsTsv(r, c, m)
+	fileName, export_err := minutes.ExportAsTsv(nc, c, m)
 	if export_err != nil {
 		c.Errorf("Error occurs: %v", export_err)
 		http.Error(w, export_err.Error(), http.StatusInternalServerError)
@@ -90,7 +93,7 @@ func Delete(w http.ResponseWriter, r *http.Request) {
 	minutes.Delete(c, m.Key)
 
 	// ダウンロードURL をメールで送信する
-	url, url_err := minutes.GetTsvUrl(r, c, fileName)
+	url, url_err := minutes.GetTsvUrl(nc, c, fileName)
 	if url_err != nil {
 		c.Errorf("Error occurs: %v", url_err)
 		http.Error(w, url_err.Error(), http.StatusInternalServerError)

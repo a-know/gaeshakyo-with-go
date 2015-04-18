@@ -11,11 +11,13 @@ import (
 	"time"
 
 	"code.google.com/p/go-uuid/uuid"
+	"golang.org/x/net/context"
 	"golang.org/x/oauth2"
 	"golang.org/x/oauth2/google"
-	newappengine "google.golang.org/appengine"
 	"google.golang.org/cloud"
 	"google.golang.org/cloud/storage"
+
+	newappengine "google.golang.org/appengine"
 
 	"model/memo"
 )
@@ -139,7 +141,7 @@ func Delete(c appengine.Context, minutesKey *datastore.Key) (err error) {
 	return
 }
 
-func ExportAsTsv(r *http.Request, c appengine.Context, minutes Minutes) (fileName string, err error) {
+func ExportAsTsv(nc context.Context, c appengine.Context, minutes Minutes) (fileName string, err error) {
 	// Minutes タイトルの取得
 	fileName = minutes.Title
 	// Minutes に紐付く Memo の取得
@@ -150,13 +152,12 @@ func ExportAsTsv(r *http.Request, c appengine.Context, minutes Minutes) (fileNam
 
 	// see https://cloud.google.com/appengine/docs/go/googlecloudstorageclient/getstarted
 	hc := &http.Client{}
-	ctx := newappengine.NewContext(r)
 	hc.Transport = &oauth2.Transport{
-		Source: google.AppEngineTokenSource(ctx, storage.ScopeFullControl),
-		Base:   &urlfetch.Transport{Context: ctx},
+		Source: google.AppEngineTokenSource(nc, storage.ScopeFullControl),
+		Base:   &urlfetch.Transport{Context: nc},
 	}
 
-	cloud_context := cloud.WithContext(ctx, newappengine.AppID(ctx), hc)
+	cloud_context := cloud.WithContext(nc, newappengine.AppID(nc), hc)
 
 	wc := storage.NewWriter(cloud_context, bucket, fileName)
 	wc.ContentType = "text/tab-separated-values"
@@ -177,14 +178,12 @@ func ExportAsTsv(r *http.Request, c appengine.Context, minutes Minutes) (fileNam
 	return fileName, nil
 }
 
-func GetTsvUrl(r *http.Request, c appengine.Context, fileName string) (url string, err error) {
+func GetTsvUrl(nc context.Context, c appengine.Context, fileName string) (url string, err error) {
 	// see http://godoc.org/google.golang.org/cloud/storage#SignedURL
 	hc := &http.Client{}
-	// ctx := cloud.NewContext(appengine.AppID(c), hc)
-	ctx := newappengine.NewContext(r)
 	hc.Transport = &oauth2.Transport{
-		Source: google.AppEngineTokenSource(ctx, storage.ScopeFullControl),
-		Base:   &urlfetch.Transport{Context: ctx},
+		Source: google.AppEngineTokenSource(nc, storage.ScopeFullControl),
+		Base:   &urlfetch.Transport{Context: nc},
 	}
 
 	url, err = storage.SignedURL(bucket, fileName, &storage.SignedURLOptions{Expires: time.Now().AddDate(1, 0, 0)}) // 1年後に失効
