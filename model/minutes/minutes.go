@@ -138,7 +138,7 @@ func Delete(c appengine.Context, minutesKey *datastore.Key) (err error) {
 }
 
 func ExportAsTsv(c appengine.Context, minutes Minutes) (fileName string, err error) {
-	bucket := "gae-gaeshakyo-with-go-bucket"
+	bucket := "gaeshakyo-with-go-bucket"
 	// Minutes タイトルの取得
 	fileName = minutes.Title
 	// Minutes に紐付く Memo の取得
