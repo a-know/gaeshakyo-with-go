@@ -71,27 +71,29 @@ func Delete(w http.ResponseWriter, r *http.Request) {
 	var m minutes.Minutes
 	err = datastore.Get(c, minutesKey, &m)
 	if err != nil {
-		http.Error(w, "Could not get specified minutes", http.StatusInternalServerError)
+		c.Errorf("Error occurs: %v", err)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
-	author := m.Author
-	if &author != u {
+	if m.Author.Email != u.Email {
 		http.Error(w, "You are not author of this minutes", http.StatusForbidden)
 		return
 	}
 
 	// tsv ファイルの作成とエンティティの削除
-	fileName, export_err := minutes.ExportAsTsv(c, m)
+	fileName, export_err := minutes.ExportAsTsv(r, c, m)
 	if export_err != nil {
-		http.Error(w, "Failed to export tsv", http.StatusInternalServerError)
+		c.Errorf("Error occurs: %v", export_err)
+		http.Error(w, export_err.Error(), http.StatusInternalServerError)
 		return
 	}
 	minutes.Delete(c, m.Key)
 
 	// ダウンロードURL をメールで送信する
-	url, url_err := minutes.GetTsvUrl(c, fileName)
+	url, url_err := minutes.GetTsvUrl(r, c, fileName)
 	if url_err != nil {
-		http.Error(w, "Failed to generate download url", http.StatusInternalServerError)
+		c.Errorf("Error occurs: %v", url_err)
+		http.Error(w, url_err.Error(), http.StatusInternalServerError)
 		return
 	}
 
@@ -102,7 +104,8 @@ func Delete(w http.ResponseWriter, r *http.Request) {
 		Body:    url,
 	}
 	if mail_err := mail.Send(c, msg); mail_err != nil {
-		http.Error(w, "Failed to send a mail", http.StatusInternalServerError)
+		c.Errorf("Error occurs: %v", mail_err)
+		http.Error(w, mail_err.Error(), http.StatusInternalServerError)
 		return
 	}
 }

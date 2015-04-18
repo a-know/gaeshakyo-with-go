@@ -6,13 +6,14 @@ import (
 	"appengine"
 	"appengine/datastore"
 	"appengine/memcache"
-	"appengine/urlfetch"
 	"appengine/user"
+	"google.golang.org/appengine/urlfetch"
 	"time"
 
 	"code.google.com/p/go-uuid/uuid"
 	"golang.org/x/oauth2"
 	"golang.org/x/oauth2/google"
+	newappengine "google.golang.org/appengine"
 	"google.golang.org/cloud"
 	"google.golang.org/cloud/storage"
 
@@ -29,7 +30,7 @@ type Minutes struct {
 }
 
 const descListMemkey = "LIST_OF_MINUTES"
-const bucket = "gaeshakyo-with-go-bucket"
+const bucket = "gaeshakyo-with-go.appspot.com"
 
 func SaveAs(c appengine.Context, title string, u *user.User) (*datastore.Key, error) {
 	key := datastore.NewKey(c, "minutes", uuid.New(), 0, nil)
@@ -138,7 +139,7 @@ func Delete(c appengine.Context, minutesKey *datastore.Key) (err error) {
 	return
 }
 
-func ExportAsTsv(c appengine.Context, minutes Minutes) (fileName string, err error) {
+func ExportAsTsv(r *http.Request, c appengine.Context, minutes Minutes) (fileName string, err error) {
 	// Minutes タイトルの取得
 	fileName = minutes.Title
 	// Minutes に紐付く Memo の取得
@@ -149,14 +150,19 @@ func ExportAsTsv(c appengine.Context, minutes Minutes) (fileName string, err err
 
 	// see https://cloud.google.com/appengine/docs/go/googlecloudstorageclient/getstarted
 	hc := &http.Client{}
-	ctx := cloud.NewContext(appengine.AppID(c), hc)
+	ctx := newappengine.NewContext(r)
 	hc.Transport = &oauth2.Transport{
 		Source: google.AppEngineTokenSource(ctx, storage.ScopeFullControl),
-		Base:   &urlfetch.Transport{Context: c},
+		Base:   &urlfetch.Transport{Context: ctx},
 	}
 
-	wc := storage.NewWriter(ctx, bucket, fileName)
+	cloud_context := cloud.WithContext(ctx, newappengine.AppID(ctx), hc)
+
+	wc := storage.NewWriter(cloud_context, bucket, fileName)
 	wc.ContentType = "text/tab-separated-values"
+	wc.Metadata = map[string]string{
+		"x-goog-project-id": "364665556586",
+	}
 
 	// 全 Memo の内容を書き出し
 	var content string
@@ -174,13 +180,14 @@ func ExportAsTsv(c appengine.Context, minutes Minutes) (fileName string, err err
 	return fileName, nil
 }
 
-func GetTsvUrl(c appengine.Context, fileName string) (url string, err error) {
+func GetTsvUrl(r *http.Request, c appengine.Context, fileName string) (url string, err error) {
 	// see http://godoc.org/google.golang.org/cloud/storage#SignedURL
 	hc := &http.Client{}
-	ctx := cloud.NewContext(appengine.AppID(c), hc)
+	// ctx := cloud.NewContext(appengine.AppID(c), hc)
+	ctx := newappengine.NewContext(r)
 	hc.Transport = &oauth2.Transport{
 		Source: google.AppEngineTokenSource(ctx, storage.ScopeFullControl),
-		Base:   &urlfetch.Transport{Context: c},
+		Base:   &urlfetch.Transport{Context: ctx},
 	}
 
 	url, err = storage.SignedURL(bucket, fileName, &storage.SignedURLOptions{Expires: time.Now().AddDate(1, 0, 0)}) // 1年後に失効
