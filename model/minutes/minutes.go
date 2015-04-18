@@ -171,5 +171,5 @@ func ExportAsTsv(c appengine.Context, minutes Minutes) (fileName string, err err
 		return fileName, close_err
 	}
 
-	return
+	return fileName, nil
 }
