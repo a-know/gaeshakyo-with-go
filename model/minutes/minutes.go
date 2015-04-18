@@ -1,13 +1,25 @@
 package minutes
 
 import (
+	"net/http"
+
 	"appengine"
 	"appengine/datastore"
 	"appengine/memcache"
 	"appengine/user"
+	"google.golang.org/appengine/urlfetch"
 	"time"
 
 	"code.google.com/p/go-uuid/uuid"
+	"golang.org/x/net/context"
+	"golang.org/x/oauth2"
+	"golang.org/x/oauth2/google"
+	"google.golang.org/cloud"
+	"google.golang.org/cloud/storage"
+
+	newappengine "google.golang.org/appengine"
+
+	"model/memo"
 )
 
 type Minutes struct {
@@ -20,6 +32,7 @@ type Minutes struct {
 }
 
 const descListMemkey = "LIST_OF_MINUTES"
+const bucket = "gaeshakyo-with-go-bucket"
 
 func SaveAs(c appengine.Context, title string, u *user.User) (*datastore.Key, error) {
 	key := datastore.NewKey(c, "minutes", uuid.New(), 0, nil)
@@ -107,5 +120,72 @@ func UpdateMemoCount(c appengine.Context, minutesKey *datastore.Key) (err error)
 	}
 
 	memcache.Delete(c, descListMemkey)
+	return
+}
+
+func Delete(c appengine.Context, minutesKey *datastore.Key) (err error) {
+	memcache.Delete(c, descListMemkey)
+	// 議事録に紐付くメモの取得
+	var memoKeyList []*datastore.Key
+	q := datastore.NewQuery("memo").Filter("Minutes =", minutesKey).KeysOnly()
+	memoKeyList, err = q.GetAll(c, nil)
+
+	err = datastore.DeleteMulti(c, memoKeyList)
+	if err != nil {
+		return err
+	}
+	err = datastore.Delete(c, minutesKey)
+	if err != nil {
+		return err
+	}
+	return
+}
+
+func ExportAsTsv(nc context.Context, c appengine.Context, minutes Minutes) (fileName string, err error) {
+	// Minutes タイトルの取得
+	fileName = minutes.Title
+	// Minutes に紐付く Memo の取得
+	memo_list, memolist_err := memo.AscList(c, minutes.Key)
+	if memolist_err != nil {
+		return fileName, memolist_err
+	}
+
+	// see https://cloud.google.com/appengine/docs/go/googlecloudstorageclient/getstarted
+	hc := &http.Client{}
+	hc.Transport = &oauth2.Transport{
+		Source: google.AppEngineTokenSource(nc, storage.ScopeFullControl),
+		Base:   &urlfetch.Transport{Context: nc},
+	}
+
+	cloud_context := cloud.WithContext(nc, newappengine.AppID(nc), hc)
+
+	wc := storage.NewWriter(cloud_context, bucket, fileName)
+	wc.ContentType = "text/tab-separated-values"
+
+	// 全 Memo の内容を書き出し
+	var content string
+	for _, memo := range memo_list {
+		content = "\"" + memo.CreatedAt.String() + "\"\t\"" + memo.Author.Email + "\"\t\"" + memo.Memo + "\"\n"
+		if _, write_err := wc.Write([]byte(content)); write_err != nil {
+			return fileName, write_err
+		}
+	}
+
+	if close_err := wc.Close(); close_err != nil {
+		return fileName, close_err
+	}
+
+	return fileName, nil
+}
+
+func GetTsvUrl(nc context.Context, c appengine.Context, fileName string) (url string, err error) {
+	// see http://godoc.org/google.golang.org/cloud/storage#SignedURL
+	hc := &http.Client{}
+	hc.Transport = &oauth2.Transport{
+		Source: google.AppEngineTokenSource(nc, storage.ScopeFullControl),
+		Base:   &urlfetch.Transport{Context: nc},
+	}
+
+	url, err = storage.SignedURL(bucket, fileName, &storage.SignedURLOptions{Expires: time.Now().AddDate(1, 0, 0)}) // 1年後に失効
 	return
 }

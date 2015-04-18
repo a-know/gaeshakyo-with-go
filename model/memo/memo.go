@@ -37,7 +37,7 @@ func SaveAs(c appengine.Context, minutesKey *datastore.Key, memoString string, u
 
 	// put
 	_, err := datastore.Put(c, key, &m1)
-	memcache.Delete(c, ascListMemkey)
+	memcache.Delete(c, ascListMemkey+minutesKey.Encode())
 
 	// post taskqueue
 	task := taskqueue.NewPOSTTask("/tq/IncrementMemoCount", url.Values{
@@ -49,7 +49,7 @@ func SaveAs(c appengine.Context, minutesKey *datastore.Key, memoString string, u
 }
 
 func AscList(c appengine.Context, minutesKey *datastore.Key) (memo []Memo, err error) {
-	memcache.Gob.Get(c, ascListMemkey, &memo)
+	memcache.Gob.Get(c, ascListMemkey+minutesKey.Encode(), &memo)
 
 	// item not found in memcache
 	if memo == nil {
@@ -58,7 +58,7 @@ func AscList(c appengine.Context, minutesKey *datastore.Key) (memo []Memo, err e
 
 		// put item to memcache
 		mem_item := &memcache.Item{
-			Key:    ascListMemkey,
+			Key:    ascListMemkey + minutesKey.Encode(),
 			Object: memo,
 		}
 		memcache.Gob.Add(c, mem_item)

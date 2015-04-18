@@ -20,3 +20,6 @@ This project is trying to "sha-kyo (写経)" a book "Google App Engine for Java�
 # Necessary `go get`
 
 * `$ go get code.google.com/p/go-uuid`
+* `$ go get golang.org/x/oauth2`
+* `$ go get google.golang.org/cloud/storage`
+* `$ go get google.golang.org/appengine`
