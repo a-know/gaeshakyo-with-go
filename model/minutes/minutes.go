@@ -160,9 +160,6 @@ func ExportAsTsv(r *http.Request, c appengine.Context, minutes Minutes) (fileNam
 
 	wc := storage.NewWriter(cloud_context, bucket, fileName)
 	wc.ContentType = "text/tab-separated-values"
-	wc.Metadata = map[string]string{
-		"x-goog-project-id": "364665556586",
-	}
 
 	// 全 Memo の内容を書き出し
 	var content string
