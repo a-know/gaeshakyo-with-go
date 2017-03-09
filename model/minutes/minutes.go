@@ -7,7 +7,7 @@ import (
 	"appengine/user"
 	"time"
 
-	"code.google.com/p/go-uuid/uuid"
+	"github.com/pborman/uuid"
 )
 
 type Minutes struct {
