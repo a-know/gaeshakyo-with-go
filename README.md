@@ -19,4 +19,4 @@ This project is trying to "sha-kyo (写経)" a book "Google App Engine for Java�
 
 # Necessary `go get`
 
-* `$ go get code.google.com/p/go-uuid`
+* `$ go get github.com/pborman/uuid`

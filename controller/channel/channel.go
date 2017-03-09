@@ -10,7 +10,7 @@ import (
 
 	channel_model "model/channel"
 
-	"code.google.com/p/go-uuid/uuid"
+	"github.com/pborman/uuid"
 )
 
 func CreateToken(w http.ResponseWriter, r *http.Request) {
